@@ -65,7 +65,6 @@ class UserController {
     @PutMapping("/{userId}")
     public void updateUser(@PathVariable Long userId, @RequestBody UserDto userDto) {
         userService.updateUser(userId, userDto);
-
     }
 
     @GetMapping("/older/{time}")

@@ -19,9 +19,11 @@ import java.util.Optional;
 class UserServiceImpl implements UserService, UserProvider {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    UserServiceImpl(final UserRepository userRepository) {
+    UserServiceImpl(final UserRepository userRepository, final UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -49,21 +51,13 @@ class UserServiceImpl implements UserService, UserProvider {
 
     public List<BasicUserDto> findAllUsersWithBasicInformation() {
         return userRepository.findAllUsersWithBasicData().stream()
-                .map(
-                        user ->
-                                new BasicUserDto(
-                                        user.getId(), user.getFirstName(), user.getLastName()))
+                .map(userMapper::toBasicUserDto)
                 .toList();
     }
 
     public UserDto findUserById(Long id) {
         User user = userRepository.findUserById(id);
-        return new UserDto(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getBirthdate(),
-                user.getEmail());
+        return userMapper.toUserDto(user);
     }
 
     @Transactional
@@ -73,31 +67,32 @@ class UserServiceImpl implements UserService, UserProvider {
     }
 
     @Transactional
-    public void deleteUser(Long id){
+    public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
 
     @Transactional
     public void updateUser(Long id, UserDto userDto) {
-        User user = new User(id, userDto.firstName(), userDto.lastName(), userDto.birthdate(), userDto.email());
+        User user =
+                new User(
+                        id,
+                        userDto.firstName(),
+                        userDto.lastName(),
+                        userDto.birthdate(),
+                        userDto.email());
         userRepository.save(user);
     }
 
-    public List<UserIdEmail> findUserByEmail(String email){
+    public List<UserIdEmail> findUserByEmail(String email) {
         List<User> users = userRepository.findUsersByEmailContainingIgnoreCase(email);
         return users.stream().map(user -> new UserIdEmail(user.getId(), user.getEmail())).toList();
     }
 
     public List<UserDto> findAllUsersOlderThan(LocalDate time) {
         return userRepository.findByBirthdateGreaterThan(time).stream()
-                .map(
-                        user ->
-                                new UserDto(
-                                        user.getId(),
-                                        user.getFirstName(),
-                                        user.getLastName(),
-                                        user.getBirthdate(),
-                                        user.getEmail()))
+                .map(userMapper::toUserDto)
                 .toList();
     }
+
+
 }
