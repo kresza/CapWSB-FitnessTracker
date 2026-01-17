@@ -9,5 +9,9 @@ import java.util.List;
 public interface TrainingRepository extends JpaRepository<Training, Long> {
 
     @Query("SELECT t FROM Training t WHERE t.user.id =:userId")
-    public List<Training> findAllByUserId(@PathParam("userId") Long userId);
+     List<Training> findAllByUserId(@PathParam("userId") Long userId);
+
+
+
+
 }
